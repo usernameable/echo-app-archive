@@ -198,7 +198,7 @@ main:has(.speak-screen){padding-top:var(--sp-4);padding-bottom:0}
 /* P4 对话接龙与 P5 小节回顾 */
 .screen.split:has(.chat-bubble),.screen.split:has(.recap-candidates){grid-template-columns:minmax(300px,400px) minmax(0,1fr);gap:var(--sp-7)}
 .screen.split:has(.chat-bubble)>div:first-child,.screen.split:has(.recap-candidates)>div:first-child{display:flex;flex-direction:column;align-items:flex-start}
-.screen.split:has(.chat-bubble)>div:first-child>.actions:first-of-type,.screen.split:has(.recap-candidates)>div:first-child>.actions:first-of-type{margin-top:auto}
+.screen.split:has(.chat-bubble)>div:first-child>.actions:first-of-type{margin-top:auto}
 .screen.split:has(.chat-bubble) .actions,.screen.split:has(.recap-candidates) .actions{width:100%}
 .screen.split:has(.chat-bubble) .actions .primary,.screen.split:has(.recap-candidates) .actions .primary{width:100%}
 .chat-bubble{min-height:calc(100dvh - 160px);background:var(--brand-veil);border-color:var(--brand-veil-border);border-radius:24px;padding:var(--sp-6)}
@@ -209,8 +209,24 @@ main:has(.speak-screen){padding-top:var(--sp-4);padding-bottom:0}
 .chat-hidden i{width:14px;height:14px;border-radius:var(--r-pill);background:var(--brand-veil-border)}
 .chat-bubble .english{font-size:var(--step-6)}
 .screen.split:has(.chat-bubble) #chat-peek{background:var(--sky-veil);border-color:var(--sky-veil-border);color:var(--sky-text)}
+.screen.split:has(.chat-bubble) #chat-wave{width:100%;height:72px;margin-top:auto;flex-shrink:0}
+.screen.split:has(.chat-bubble) #chat-wave span{border-radius:var(--r-pill);background:var(--sky-veil-border)}
+.screen.split:has(.chat-bubble) #chat-wave.is-recording span{background:var(--sky-cta)}
+.screen.split:has(.chat-bubble)>div:first-child>.actions:first-of-type{margin-top:var(--sp-3)}
+.chat-line-heading{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);margin:var(--sp-4) 0}
+.chat-line-heading .eyebrow{margin:0}
+.chat-line-heading .secondary{min-height:var(--hit-ctl);font-size:var(--step-4)}
+.chat-line-card{min-height:140px;padding:var(--sp-5);background:var(--surface);border:2px solid var(--brand-veil-border);border-radius:var(--r-card)}
+.chat-line-card p{margin:var(--sp-3) 0}
+.chat-line-card.chat-hidden{display:flex;align-items:center;margin:0}
+.chat-hint{font-size:var(--step-2);color:var(--brand-text)}
 .screen.split:has(.recap-candidates)>.panel{background:var(--gold-veil);border-color:var(--gold-shadow);border-radius:24px;padding:var(--sp-6)}
-.recap-candidates{max-height:360px}.recap-choice{border-radius:var(--r-ctl);padding:var(--sp-4)}
+.recap-panel{display:flex;flex-direction:column;height:calc(100dvh - 160px);min-height:600px}
+.recap-play-row{display:flex;justify-content:flex-end;margin:var(--sp-2) 0 var(--sp-4)}
+.recap-play-row .primary{min-width:190px;min-height:64px}
+.recap-guidance{border-top:2px solid var(--gold-shadow);padding-top:var(--sp-3)}
+.recap-guidance .small-note{margin:0 0 var(--sp-2)}
+.recap-candidates{flex:1;min-height:0;max-height:none;align-content:start}.recap-choice{border-radius:var(--r-ctl);padding:var(--sp-4)}
 .recap-choice:first-child{border-color:var(--brand-veil-border)}
 .recap-choice .actions{justify-content:flex-end}.recap-choice button{font-size:var(--step-2);min-height:48px}
 .recap-choice button[data-recap-select]{color:var(--brand-text);border-color:var(--brand-veil-border)}
@@ -273,7 +289,7 @@ main:has(.speak-screen){padding-top:var(--sp-4);padding-bottom:0}
 .top-start:has(#stage-back:not([hidden])) #back{display:none}
 .screen.split:has(#recap-next){grid-template-columns:minmax(300px,400px) minmax(0,1fr);gap:var(--sp-7)}
 .screen.split:has(#recap-next)>div:first-child{display:flex;flex-direction:column;align-items:flex-start}
-.screen.split:has(#recap-next)>div:first-child>.actions:first-of-type{margin-top:auto}
+.screen.split:has(#recap-next)>div:first-child>.actions:first-of-type{margin-top:var(--sp-6)}
 .screen.split:has(#recap-next)>.panel{background:var(--gold-veil);border-color:var(--gold-shadow);border-radius:24px;padding:var(--sp-6)}
 .stat-bar,.goal-track{appearance:none;display:block;width:100%;height:9px;border:0;border-radius:var(--r-pill);background:var(--sunk);overflow:hidden}
 .stat-bar::-webkit-progress-bar,.goal-track::-webkit-progress-bar{background:var(--sunk)}

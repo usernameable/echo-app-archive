@@ -7,6 +7,10 @@ export function completionResult(result) {
 
 export function lineById(unit, id) { return unit.script.find(line => line.id === id); }
 
+export function childChatIndex(unit, index) {
+  return lineById(unit, unit.chat[index])?.speaker === 'A' ? index + 1 : index;
+}
+
 export function listenGroup(unit, index) {
   const start = index > 0 && unit.script[index]?.speaker === 'B' && unit.script[index-1]?.speaker === 'A' ? index-1 : index;
   return unit.script[start]?.speaker === 'A' && unit.script[start+1]?.speaker === 'B' ? [start,start+1] : [start];

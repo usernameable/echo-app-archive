@@ -1,4 +1,4 @@
-const CACHE = 'echo-local-v19';
+const CACHE = 'echo-local-v21';
 const ASSETS = ['./', './index.html', './styles.css', './02-设计规范/design-tokens.css', './fonts/fonts.css',
   './fonts/fredoka-latin.woff2', './fonts/nunito-latin.woff2',
   './bootstrap.js', './app.js', './content.js', './recorder.js?v=4.2.2', './recognition.js',

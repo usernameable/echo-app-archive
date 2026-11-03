@@ -4,7 +4,7 @@ import { recordSentence } from './recorder.js?v=4.2.2';
 import { assess, debugResult } from './assessment.js';
 import { startLocalRecognition, alignWords } from './recognition.js';
 import { loadProgress, saveProgress, failures, setFailures, saveClip, loadClip, deleteClip, recordingEpoch, deleteAllClips, clearDemoProgress, dateKey, markCompletedDay, consecutiveDays } from './storage.js';
-import { lineById, bestSectionClip, previousMachine, completionResult, rankClips, sectionCandidates } from './dialogue.js';
+import { lineById, childChatIndex, bestSectionClip, previousMachine, completionResult, rankClips, sectionCandidates } from './dialogue.js';
 import { recapScreen, chatScreen, resultNotice, feedbackText } from './flow-screens.js';
 import { progressFacts, breathWords } from './progress.js';
 import { icon } from './icons.js';
@@ -24,7 +24,7 @@ const demoTime = demoDay ? new Date(`${demoDay}T12:00:00`).getTime() : NaN;
 const sessionNow = () => demoDay && dateKey(demoTime) === demoDay ? demoTime : Date.now();
 const SESSION_MAX_MS = 15 * 60 * 1000;
 const newProgress = () => ({ stage: 'home', sessionId: crypto.randomUUID(), startedAt: null, sentenceIndex: 0,
-  chatIndex: 0, chatHelp: 0, chatDone: false, counts: {}, recordings: [], shared: false, heard: false });
+  chatIndex: 0, chatHelp: 0, chatHidden: false, chatDone: false, counts: {}, recordings: [], shared: false, heard: false });
 let state = loadProgress() ?? newProgress();
 if (!['home','listen','speak','recap','chat','wrap','share'].includes(state.stage)) state.stage = 'recap';
 if (state.contentRevision !== 2) { state.listenIndex = 0; state.chatIndex = 0; state.chatDone = false; state.contentRevision = 2; }
@@ -33,9 +33,11 @@ state.recordings ??= [];
 state.sessions ??= [];
 state.completedDays ??= [];
 state.resting ??= false;
+state.restDeferred = false;
 state.unitId ??= firstUnit.id;
 state.listenIndex ??= 0;
 state.listenAudioUnavailable ??= false;
+state.chatHidden ??= false;
 state.seen = state.seen?.map(key => key.startsWith('U-') ? key : `${firstUnit.id}:${key}`);
 for (const item of state.recordings) { item.unitId ??= firstUnit.id; item.sessionId ??= state.sessionId; }
 let unit = units.find(item => item.id === state.unitId) ?? firstUnit;
@@ -50,7 +52,6 @@ let pairPlaying = false, pairTimer = null, pairWait = null;
 let chatController = null;
 let recordController = null;
 let machinePlayId = 0;
-let guardianCode = '', guardianEntry = '';
 let debugSnapshot = {};
 const queuedAudio = [];
 const save = () => saveProgress(state);
@@ -99,6 +100,7 @@ function checkpoint(stage) {
   if (state.stage === 'recap' && stage !== 'recap') stopPair();
   if (state.stage === 'chat' && stage !== 'chat') { machinePlayId++; chatController?.abort(); stopSpeech(); }
   state.stage = stage;
+  if (stage === 'chat') state.chatIndex = childChatIndex(unit, state.chatIndex);
   if (stage === 'recap') {
     if (!(fromStage === 'chat' && state.sectionSelected && sectionCandidates(unit, state.recordings, state.sessionId).some(item => item.recordingId === state.sectionHighlight))) {
       const best = bestSectionClip(unit, state.recordings, state.sessionId);
@@ -117,8 +119,8 @@ function checkpoint(stage) {
     state.completedDays = markCompletedDay(state.completedDays, sessionNow());
   }
   save();
-  if (stage === 'wrap' && state.restDeferred) enterRest();
-  else render();
+  render();
+  if (stage === 'chat') playMachineTurn();
 }
 function timeGuard() {
   if (state.resting) return;
@@ -139,22 +141,19 @@ function restGuard() {
   if (!document.hidden && !state.resting && !document.querySelector('#rest').open && now - lastInputAt < 60000) {
     activeMs += delta; localStorage.setItem(activityKey, String(activeMs));
   }
-  if (activeMs >= 30 * 60 * 1000 && !state.restDeferred && !state.resting && !busy && !document.querySelector('#rest').open) {
+  if (activeMs >= 30 * 60 * 1000 && !state.resting && !busy && !document.querySelector('#rest').open) {
     stopSpeech(); stopClip(); document.querySelector('#rest').showModal();
   }
 }
 setInterval(restGuard, 1000);
 function enterRest() {
-  state.restDeferred = false; state.resting = true; state.restReturnStage = state.stage;
+  state.resting = true;
   stopSpeech(); stopClip(); save(); render();
 }
-function openGuardian() {
-  guardianCode = String(crypto.getRandomValues(new Uint16Array(1))[0] % 10000).padStart(4, '0');
-  guardianEntry = '';
-  document.querySelector('#guardian-code').textContent = guardianCode;
-  document.querySelector('#guardian-entry').textContent = '等待输入';
-  document.querySelector('#guardian-status').textContent = '';
-  document.querySelector('#guardian').showModal();
+function continueLearning() {
+  state.resting = false;
+  activeMs = 0; localStorage.setItem(activityKey, '0');
+  save(); render();
 }
 const recentActions = new Map();
 document.addEventListener('click', event => {
@@ -194,7 +193,7 @@ async function refreshSavedLines() {
 function beginUnit(item) {
   unit = item;
   state = { ...state, unitId:unit.id, sessionId:crypto.randomUUID(), stage:'listen', startedAt:Date.now(),
-    listenIndex:0, listenAudioUnavailable:false, sentenceIndex:0, chatIndex:0, chatHelp:0, chatDone:false, chatFeedback:null, sectionHighlight:null, sectionSelected:false, shared:false, heard:false };
+    listenIndex:0, listenAudioUnavailable:false, sentenceIndex:0, chatIndex:0, chatHelp:0, chatHidden:false, chatDone:false, chatFeedback:null, sectionHighlight:null, sectionSelected:false, shared:false, heard:false };
   latestResult = null; showHome = false; save(); render();
 }
 
@@ -237,7 +236,7 @@ function microphoneErrorText(error) {
 }
 function recap() { return recapScreen(state, unit, esc); }
 function chat() { return chatScreen(state, unit, esc); }
-function resting() { return `<section class="screen split"><div><p class="eyebrow">休息时间</p><h1>现在休息</h1><p>离开屏幕，看看远处。</p><div class="actions"><button id="guardian-open" class="secondary">需要家长协助继续</button></div></div><div class="panel"><p>这段练习留在本机，之后可以接着说。</p></div></section>`; }
+function resting() { return `<section class="screen split"><div><p class="eyebrow">休息时间</p><h1>现在休息</h1><p>离开屏幕，看看远处。</p><div class="actions"><button id="rest-continue" class="primary">可以继续学习</button></div></div><div class="panel"><p>这段练习留在本机，之后可以接着说。</p></div></section>`; }
 
 function progress() {
   const facts = progressFacts(state, units, sessionNow());
@@ -299,6 +298,7 @@ function share() {
 function render() {
   timeGuard();
   const view = state.resting ? 'resting' : overlayPage ?? (showHome ? 'home' : state.stage);
+  if (view === 'chat') state.chatIndex = childChatIndex(unit, state.chatIndex);
   main.innerHTML = ({ home, listen, speak: speakScreen, recap, chat, resting, wrap, share, progress, lines, parent: parent.screen, selfcheck: selfcheck.screen })[view]?.() ?? home();
   const chipUnit = view === 'home' || (overlayPage && (showHome || state.stage === 'home')) ? homeRecommendation : unit;
   label.textContent = (stageNames[view] ?? '') + (debug && params.get('feedback') ? ' · 调试预览' : '');
@@ -319,7 +319,6 @@ function render() {
   main.querySelectorAll('[data-line-delete]').forEach(button => { button.innerHTML = `${icon('delete')}<span>删除这句</span>`; });
   if (view === 'listen') syncListenButton();
   bind();
-  if (view === 'chat' && lineById(unit, unit.chat[state.chatIndex])?.speaker === 'A') playMachineTurn();
   if (debug) updateDebug();
 }
 function bind() {
@@ -396,7 +395,7 @@ function bind() {
   $('#chat-next')?.addEventListener('click', advanceChat);
   $('#chat-wrap')?.addEventListener('click', () => checkpoint('wrap'));
   $('#chat-exit')?.addEventListener('click', () => { machinePlayId++; chatController?.abort(); stopSpeech(); showHome = true; save(); render(); });
-  $('#chat-replay')?.addEventListener('click', () => { const line = lineById(unit, unit.chat[state.chatIndex]); if (line?.speaker === 'A') playMachineTurn(); else { const prior = previousMachine(unit, line?.id); if (prior) speak(prior.text); } });
+  $('#chat-replay')?.addEventListener('click', playMachineTurn);
   $('#chat-record')?.addEventListener('click', doChatRecord);
   $('#chat-play-mine')?.addEventListener('click', async () => {
     const id = unit.chat[state.chatIndex];
@@ -404,9 +403,10 @@ function bind() {
     try { if (!await playClip(item?.recordingId)) showToast('这段录音暂时找不到。', 'notice'); } catch { showToast('这段录音暂时找不到。', 'notice'); }
   });
   $('#chat-help')?.addEventListener('click', () => document.querySelector('#help').showModal());
-  $('#chat-peek')?.addEventListener('click', () => { state.chatHelp = 1; save(); render(); showToast('句子已显示。'); });
+  $('#chat-hide')?.addEventListener('click', () => { state.chatHidden = true; save(); render(); });
+  $('#chat-peek')?.addEventListener('click', () => { state.chatHidden = false; state.chatHelp = 1; save(); render(); });
   $('#chat-hear')?.addEventListener('click', async () => { const index = state.chatIndex; state.chatHelp = 2; save(); render(); if (!await speak(lineById(unit, unit.chat[index]).text) && state.stage === 'chat' && state.chatIndex === index) { const status = main.querySelector('#chat-status'); if (status) status.textContent = '英文示范音暂时没有播出。'; } });
-  $('#guardian-open')?.addEventListener('click', openGuardian);
+  $('#rest-continue')?.addEventListener('click', continueLearning);
   $('#play-showcase')?.addEventListener('click', playShowcase);
   $('#repeat-old')?.addEventListener('click', () => { state.sentenceIndex = 0; latestResult = null; checkpoint('speak'); });
   $('#share')?.addEventListener('click', async () => { const best = await availableShowcase(); state.shared = true; const session = state.sessions.find(item => item.sessionId === state.sessionId); if (session) session.shared = true; if (best) { best.sharedAt = sessionNow(); best.sharedByChild = true; } checkpoint('share'); playShowcase(); });
@@ -481,25 +481,25 @@ async function queueOrSpeak(text, index, button) {
 function advanceChat() {
   machinePlayId++;
   stopSpeech(); stopClip();
-  state.chatIndex++;
-  state.chatHelp = 0; state.chatDone = false; state.chatFeedback = null;
+  state.chatIndex = childChatIndex(unit, state.chatIndex + 1);
+  state.chatHelp = 0; state.chatHidden = false; state.chatDone = false; state.chatFeedback = null;
   save(); render();
+  playMachineTurn();
 }
 async function playMachineTurn() {
-  const line = lineById(unit, unit.chat[state.chatIndex]);
-  if (state.stage !== 'chat' || line?.speaker !== 'A') return;
+  const line = previousMachine(unit, unit.chat[state.chatIndex]);
+  if (state.stage !== 'chat' || !line) return;
   const index = state.chatIndex, playId = ++machinePlayId;
   const played = await speak(line.text);
   if (playId !== machinePlayId || state.stage !== 'chat' || state.chatIndex !== index) return;
-  if (played) advanceChat();
-  else main.querySelector('#chat-status').textContent = '英文示范音暂时没有播出。可以点下一句。';
+  if (!played) main.querySelector('#chat-status').textContent = '英文示范音暂时没有播出。可以点录音。';
 }
 async function doChatRecord() {
   if (chatController) { chatController.abort(); return; }
   if (busy) return;
   const line = lineById(unit, unit.chat[state.chatIndex]);
   if (line?.speaker !== 'B') return;
-  busy = true; stopSpeech(); stopClip();
+  busy = true; machinePlayId++; stopSpeech(); stopClip();
   const index = state.chatIndex, sessionId = state.sessionId, epoch = recordingEpoch();
   const controller = new AbortController(); chatController = controller;
   const button = main.querySelector('#chat-record'); button.textContent = '准备中'; button.disabled = true;
@@ -511,6 +511,7 @@ async function doChatRecord() {
       if (!document.hidden) bars.forEach((bar, i) => { bar.style.transform = `scaleY(${Math.max(.12, Math.min(1, rms * (4 + i%6)))})`; });
     }, controller.signal, () => {
       if (state.stage !== 'chat' || state.chatIndex !== index) return;
+      main.querySelector('#chat-wave')?.classList.add('is-recording');
       button.disabled = false; button.textContent = '好了';
       main.querySelector('#chat-status').textContent = '现在开始读。读完会自动停，也可以点“好了”。';
     });
@@ -524,7 +525,7 @@ async function doChatRecord() {
     const passed = ['pass','force_pass'].includes(result.verdict);
     setFailures(sessionId, line.id, passed ? 0 : prior+1);
     state.chatDone = passed; state.chatFeedback = feedbackText(result);
-    save(); if (passed && state.restDeferred) enterRest(); else render();
+    save(); render();
     showToast(passed ? `第 ${index+1} 句读完了 · 今天还剩 ${unit.chat.slice(index+1).filter(id => lineById(unit, id).speaker === 'B').length} 句` : '机器没听清这句。', passed ? 'success' : 'notice');
   } catch (error) {
     if (state.stage !== 'chat' || state.chatIndex !== index) return;
@@ -593,7 +594,6 @@ async function doRecord() {
     latestResult = result;
     save();
     const passed = ['pass','force_pass'].includes(result.verdict);
-    if (passed && state.restDeferred) { busy = false; enterRest(); return; }
     busy = false;
     render();
     if (passed && signals.peakLevel >= .05 && main.querySelector('.speak-screen')) {
@@ -639,7 +639,7 @@ function stopClip() {
 function finishPair() {
   pairPlaying = false;
   const button = main.querySelector('#play-pair');
-  if (button) button.textContent = '播放合播';
+  if (button) button.textContent = '播放';
 }
 function stopPair() {
   pairPlaying = false;
@@ -654,7 +654,7 @@ async function playPair() {
   const machine = best && previousMachine(unit, best.sentenceId);
   if (!machine) return;
   pairPlaying = true;
-  main.querySelector('#play-pair').textContent = '停止合播';
+  main.querySelector('#play-pair').textContent = '停止播放';
   const spoken = await speak(machine.text);
   if (!pairPlaying) return;
   if (!spoken) { stopPair(); main.querySelector('#recap-status').textContent = '英文示范音暂时没有播出。'; return; }
@@ -674,24 +674,8 @@ async function playShowcase() {
 document.querySelector('#close-help').addEventListener('click', () => document.querySelector('#help').close());
 const settings = document.querySelector('#settings');
 const restDialog = document.querySelector('#rest');
-const guardianDialog = document.querySelector('#guardian');
 document.querySelector('#rest-now').addEventListener('click', () => { restDialog.close(); enterRest(); });
-document.querySelector('#rest-after').addEventListener('click', () => { state.restDeferred = true; save(); restDialog.close(); });
-document.querySelector('#guardian-close').addEventListener('click', () => guardianDialog.close());
-document.querySelector('#guardian-pad').innerHTML = [...'1234567890'].map(digit => `<button data-digit="${digit}" aria-label="数字 ${digit}">${digit}</button>`).join('');
-document.querySelector('#guardian-pad').addEventListener('click', event => {
-  const digit = event.target.closest('[data-digit]')?.dataset.digit;
-  if (digit == null || guardianEntry.length >= 4) return;
-  guardianEntry += digit;
-  document.querySelector('#guardian-entry').textContent = '●'.repeat(guardianEntry.length);
-});
-document.querySelector('#guardian-clear').addEventListener('click', () => { guardianEntry = ''; document.querySelector('#guardian-entry').textContent = '等待输入'; });
-document.querySelector('#guardian-check').addEventListener('click', () => {
-  if (guardianEntry !== guardianCode) { document.querySelector('#guardian-status').textContent = '口令未匹配。'; return; }
-  guardianDialog.close(); state.resting = false; state.restDeferred = false;
-  activeMs = 0; localStorage.setItem(activityKey, '0');
-  save(); render();
-});
+document.querySelector('#rest-continue-dialog').addEventListener('click', () => { restDialog.close(); continueLearning(); });
 document.querySelector('#settings-open').innerHTML = `${icon('settings')}<span>设置</span>`;
 document.querySelector('#parent-open').innerHTML = icon('parent');
 document.querySelector('#parent-open').addEventListener('click', parent.open);
