@@ -1,0 +1,405 @@
+/* =============================================================
+   Echo · UI Design Tokens v2「Parrot」 · 2026-11-02
+   方向：Duolingo 式游戏化儿童学习语言 × Echo 自有鹦鹉 IP × 平板横屏
+   用法：index.html 在 styles.css 之前引入
+     <link rel="stylesheet" href="./fonts/fonts.css">
+     <link rel="stylesheet" href="./02-设计规范/design-tokens.css">
+   与 v1（02-设计规范）的关系：v2 是方向切换后的新权威，见同目录 README.md §2 取舍表。
+   ============================================================= */
+
+:root{
+  /* ---------- 1. 中性 / 文本（7） ---------- */
+  --bg:#FFFFFF;            /* 画布底：纯白。v1 的暖米白 #FFFBF3 属类纸屏口径，LCD 平板改用纯白 */
+  --surface:#FFFFFF;       /* 卡片面 */
+  --sunk:#F7F7F7;          /* 凹陷槽 / 进度槽底 / 下一句预告底 */
+  --border:#E5E5E5;        /* 描边（必须 ≥2px） */
+  --ink:#3C3C3C;           /* 正文 · 白底对比 11.0:1 */
+  --ink-2:#777777;         /* 次要文字 · 4.5:1 */
+  --ink-3:#8E8E8E;         /* 弱标签（仅非关键信息）· 3.3:1 */
+  --ink-4:#AFAFAF;         /* 装饰 / 占位（2.2:1）—— 禁承载任何信息 */
+
+  /* ---------- 2. 品牌绿（6） ---------- */
+  --brand:#58CC02;         /* 品牌绿 · 填充 / 图标 / 插画 / 进度（禁止配白字，见 §合规） */
+  --brand-cta:#46A302;     /* 主按钮底 + 白字（大文本 3.2:1） */
+  --brand-shadow:#3D8B02;  /* 绿按钮硬阴影 + 按下态底色 */
+  --brand-text:#458000;    /* 白底上的绿色文字 / 小标签（4.8:1） */
+  --brand-veil:#D7FFB8;    /* 绿浅底（单元标签 / 用户气泡 / 提示条） */
+  --brand-veil-border:#B7E69A; /* 绿浅底之上的描边 */
+
+  /* ---------- 3. 数据蓝（6） ---------- */
+  --sky:#1CB0F6;           /* 蓝 · 填充 / 图标 / 麦克风（禁止配白字与小号蓝字） */
+  --sky-cta:#1899D6;       /* 蓝按钮底 + 白字（大文本 3.2:1） */
+  --sky-shadow:#0F7FB8;    /* 蓝按钮硬阴影 */
+  --sky-text:#0E76AC;      /* 白底上的蓝色文字 / 链接（5.0:1） */
+  --sky-veil:#DDF4FF;      /* 蓝浅底（听力标签 / 导航选中 / 图标底） */
+  --sky-veil-border:#84D8FF; /* 蓝浅底之上的描边 */
+
+  /* ---------- 4. 奖励金（4） ---------- */
+  --gold:#FFC800;          /* XP / 今日高亮柱 / 徽章（只做填充与图标，不做文字） */
+  --gold-shadow:#E0A800;   /* 金色棱边 */
+  --gold-text:#8F6600;     /* 白底上的金色数字（5.2:1） */
+  --gold-veil:#FFF4D1;     /* 金浅底（连续天数胶囊） */
+
+  /* ---------- 5. 能量橙（2） ---------- */
+  --energy:#FF9600;        /* 连胜火焰 / 连续天数（填充与图标，不做文字） */
+  --energy-text:#C2410C;   /* 白底上的橙色文字（5.2:1） */
+
+  /* ---------- 6. 生命红（2） ---------- */
+  --danger:#FF4B4B;        /* 红心 / 生命值（填充与图标） */
+  --danger-text:#D93A3A;   /* 白底上的红色文字（4.6:1） */
+
+  /* ---------- 7. 禁用态（2） ---------- */
+  --disabled-bg:#D9D9D9;
+  --disabled-shadow:#BFBFBF; /* 不许用减透明度冒充禁用 */
+
+  /* ---------- 8. 圆角（4 档，同类不许混用） ---------- */
+  --r-pill:999px;   /* 徽章 / 进度条 / 语音条 / 小 chip */
+  --r-card:20px;    /* 卡片 / Modal / 对话气泡 */
+  --r-ctl:16px;     /* 按钮（主次一致）/ 大卡片内控件 */
+  --r-sm:12px;      /* 单词 chip / 图标底 / 插画 */
+
+  /* ---------- 9. 立体棱边（零模糊硬阴影） ---------- */
+  --ledge-btn:0 4px 0 var(--brand-shadow);
+  --ledge-btn-press:0 0 0 var(--brand-shadow);
+  --ledge-sky:0 4px 0 var(--sky-shadow);
+  --ledge-ghost:0 4px 0 var(--border);
+  --ledge-sm:0 2px 0 var(--border);
+  --lift-btn:4px;              /* 按下位移量 = 吃掉自己的棱高 */
+  --lift-sm:2px;
+
+  /* ---------- 10. 动效（三档，只做 transform / opacity） ---------- */
+  --t-fast:120ms cubic-bezier(.2,.7,.3,1);   /* 按压 / 悬停 */
+  --t-base:240ms cubic-bezier(.2,.7,.3,1);   /* 面板切换 / 进度 / 数值 */
+  --t-pop:520ms cubic-bezier(.34,1.4,.5,1);  /* 庆祝（单次，>1.5s 必须可跳过） */
+
+  /* ---------- 11. 字号（step-1 ~ step-9） ---------- */
+  --step-9:34px;  /* 情境大标题（唯一 34，不许更大） */
+  --step-8:28px;  /* 目标句（上限） */
+  --step-7:26px;  /* 页面标题 */
+  --step-6:20px;  /* 英文副标题 / 关键数值 */
+  --step-5:18px;  /* 主按钮文字 */
+  --step-4:17px;  /* 正文（下限，不许更小） */
+  --step-3:15px;  /* 单词 chip / 卡片内强调 */
+  --step-2:13px;  /* 次要说明 / 翻译 */
+  --step-1:12px;  /* 全大写式小标签（+1.1px 字距 / 800） */
+
+  /* ---------- 12. 间距（4px 基网） ---------- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:20px; --sp-6:24px; --sp-7:28px; --sp-8:32px;
+  --pad-card:20px;      /* 卡片内边距 */
+  --pad-screen:32px;    /* 主内容区边距 */
+  --gap-block:24px;     /* 区块之间 */
+  --nav-w:112px;        /* 左侧导航宽 */
+
+  /* ---------- 13. 字体（禁外链，用 fonts/ 内置切片） ---------- */
+  --font-display:'Nunito','PingFang SC','HarmonyOS Sans SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-body:'Nunito','PingFang SC','HarmonyOS Sans SC','Microsoft YaHei',system-ui,sans-serif;
+  --font-num:'Nunito','PingFang SC',system-ui,sans-serif; /* tabular-nums */
+
+  /* ---------- 14. 触控（儿童平板口径） ---------- */
+  --hit-min:48px;        /* chip / 密集元素最小热区 */
+  --hit-ctl:64px;        /* 图标按钮 / 次按钮热区 */
+  --hit-primary:64px;    /* 主按钮热区（视觉高 ≥56px） */
+  --hit-mic:80px;        /* 麦克风主按钮（视觉直径 ≥64px） */
+}
+
+/* =============================================================
+   组件类 —— Codex 直接复用，不要另起一套
+   ============================================================= */
+
+/* --- 按钮底座：所有按钮共用立体语言 --- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  min-height:56px; padding:0 var(--sp-6);
+  border:0; border-radius:var(--r-ctl);
+  font-family:var(--font-display); font-size:var(--step-5); font-weight:800;
+  cursor:pointer; user-select:none;
+  transition:transform var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+}
+.btn-primary{ background:var(--brand-cta); color:#fff; box-shadow:var(--ledge-btn); }
+.btn-primary:active{ transform:translateY(var(--lift-btn)); box-shadow:var(--ledge-btn-press); }
+.btn-primary-bright{ background:var(--brand); color:var(--ink); box-shadow:0 4px 0 var(--brand-cta); }
+.btn-primary-bright:active{ transform:translateY(var(--lift-btn)); box-shadow:0 0 0 var(--brand-cta); }
+.btn-sky{ background:var(--sky-cta); color:#fff; box-shadow:var(--ledge-sky); }
+.btn-sky:active{ transform:translateY(var(--lift-btn)); box-shadow:0 0 0 var(--sky-shadow); }
+.btn-ghost{ background:var(--surface); color:var(--sky-text);
+  border:2px solid var(--border); box-shadow:var(--ledge-ghost); }
+.btn-ghost:active{ transform:translateY(var(--lift-btn)); box-shadow:0 0 0 var(--border); }
+.btn[disabled],.btn.is-disabled{
+  background:var(--disabled-bg); color:#fff;
+  box-shadow:0 4px 0 var(--disabled-shadow); pointer-events:none;
+}
+
+/* --- 卡片：白底 + 2px 描边 + 零模糊 --- */
+.card{
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:var(--r-card); padding:var(--pad-card);
+}
+
+/* --- 单词 chip：核心交互件，逐词可点 --- */
+.word-chip{
+  display:inline-flex; align-items:center;
+  min-height:36px; padding:var(--sp-2) var(--sp-3);
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--r-sm);
+  box-shadow:var(--ledge-sm);
+  font-family:var(--font-display); font-size:var(--step-3); font-weight:800; color:var(--ink);
+  cursor:pointer; transition:transform var(--t-fast), background var(--t-fast);
+}
+.word-chip:active{ transform:translateY(var(--lift-sm)); box-shadow:0 0 0 var(--border); }
+.word-chip.is-active{ background:var(--sky-veil); border-color:var(--sky-veil-border); color:var(--sky-text); box-shadow:0 2px 0 var(--sky-veil-border); }
+.word-chip.is-user-active{ background:var(--brand-veil); border-color:var(--brand-veil-border); color:var(--brand-text); box-shadow:0 2px 0 var(--brand-veil-border); }
+.word-chip.is-miss{ background:var(--gold-veil); border-color:var(--gold); color:var(--gold-text); }
+
+/* --- v2.2 评分结果态（跟读评分结果页 S11 逐词 chip；画布 7:694） --- */
+.word-chip.is-good{ background:var(--brand-veil); border-color:var(--brand-veil-border); color:var(--brand-text); box-shadow:0 2px 0 var(--brand-veil-border); }
+.word-chip.is-warn{ background:var(--gold-veil); border-color:var(--gold-shadow); color:var(--gold-text); box-shadow:0 2px 0 var(--gold-shadow); }
+.word-chip.is-bad{ background:#FFE8E6; border-color:#F2B8B3; color:var(--danger-text); box-shadow:0 2px 0 #F2B8B3; }
+.word-chip.is-replay{ background:var(--sky-veil); border-color:var(--sky-veil-border); color:var(--sky-text); }
+
+/* --- v2.2 点按提示气泡（挂在 chip 父级，chip 需 position:relative） --- */
+.word-tip{
+  position:absolute; bottom:calc(100% + 10px); left:50%; transform:translateX(-50%); z-index:20;
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--r-sm);
+  box-shadow:0 3px 0 var(--border); padding:var(--sp-2) var(--sp-3); white-space:nowrap;
+  font-size:var(--step-2); color:var(--ink);
+}
+.word-tip::after{
+  content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  border:6px solid transparent; border-top-color:var(--border);
+}
+
+/* --- 徽章 chip：连胜 / 宝石 / 红心 --- */
+.badge{
+  display:inline-flex; align-items:center; gap:var(--sp-2);
+  padding:var(--sp-2) var(--sp-3);
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--r-pill);
+  box-shadow:var(--ledge-sm);
+  font-family:var(--font-display); font-size:var(--step-3); font-weight:800;
+}
+.badge-streak{ color:var(--energy); }
+.badge-gem{ color:var(--sky-text); }
+.badge-heart{ color:var(--danger); }
+
+/* --- 进度条：必须配文字，不靠颜色单独表意 --- */
+.progress{ background:var(--sunk); border-radius:var(--r-pill); overflow:hidden; }
+.progress > i{ display:block; height:100%; background:var(--brand); border-radius:var(--r-pill); transition:width var(--t-base); }
+.progress.is-gold > i{ background:var(--gold); }
+
+/* --- 对话气泡 --- */
+.bubble{
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:var(--r-card); padding:var(--pad-card);
+}
+.bubble.is-user{ background:var(--brand-veil); border-color:var(--brand); }
+
+/* --- 语音条（跟读核心操作位） --- */
+.voice-bar{
+  display:flex; align-items:center; gap:var(--sp-4);
+  padding:var(--sp-4) var(--sp-5);
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:var(--r-pill); box-shadow:0 3px 0 var(--border);
+}
+.mic-btn{
+  width:var(--hit-mic); height:var(--hit-mic); border-radius:var(--r-pill);
+  background:var(--sky); border:0; box-shadow:0 4px 0 var(--sky-shadow);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.mic-btn:active{ transform:translateY(var(--lift-btn)); box-shadow:0 0 0 var(--sky-shadow); }
+.mic-btn.is-listening{ background:var(--brand); box-shadow:0 4px 0 var(--brand-shadow); }
+
+/* --- 图标按钮 --- */
+.icon-btn{
+  width:44px; height:44px; min-width:var(--hit-ctl); min-height:var(--hit-ctl);
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:var(--r-pill); box-shadow:var(--ledge-sm); cursor:pointer;
+}
+.icon-btn:active{ transform:translateY(var(--lift-sm)); box-shadow:0 0 0 var(--border); }
+
+/* --- 导航项 --- */
+.nav-item{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  width:100%; padding:10px; border-radius:var(--r-ctl);
+  font-family:var(--font-body); font-size:var(--step-1); font-weight:800;
+  color:var(--ink-2); cursor:pointer;
+}
+.nav-item.is-active{ background:var(--sky-veil); border:2px solid var(--sky-veil-border); color:var(--sky-text); }
+
+/* --- 数值：tabular-nums，跳动不错位 --- */
+.num{ font-family:var(--font-num); font-variant-numeric:tabular-nums; font-weight:800; }
+
+/* --- 焦点可见（键盘 / 无障碍） --- */
+:focus-visible{ outline:3px solid var(--sky-cta); outline-offset:2px; }
+
+/* =============================================================
+   合规红线（写死，评审照查）
+   1. 禁止白字配 #58CC02（2.1:1）——主按钮用 --brand-cta #46A302
+   2. 禁止白底上用 #1CB0F6 / #FFC800 / #FF9600 / #FF4B4B 做文字（均 <4.5:1）
+      → 分别用 --sky-text / --gold-text / --energy-text / --danger-text
+   3. 禁止 blur>0 的阴影；禁止 1px 描边
+   4. 禁止外链字体 / 外链图片 / CDN
+   ============================================================= */
+
+/* =============================================================
+   v2.1 追加（2026-11-02）· 全页面组件
+   对应设计规范 §9；画布 https://ardot.tencent.com/file/743133053805359
+   ============================================================= */
+
+/* --- 全局顶栏（变体 A：首页/进步/句子本/家长页） --- */
+.topbar{
+  display:flex; align-items:center; gap:12px;
+  padding:16px; background:var(--surface);
+  border-bottom:2px solid var(--border);
+}
+.topbar__logo{ display:flex; align-items:center; gap:10px; }
+.topbar__logo img{ width:40px; height:40px; border-radius:var(--r-pill); background:var(--sky-veil); }
+.topbar__brand{ font-family:var(--font-display); font-size:24px; font-weight:900; color:var(--brand-cta); }
+.topbar__slogan{ font-size:13px; color:var(--ink-4); }
+.topbar__spacer{ flex:1; }
+/* 练习顶栏（变体 B：练习进行中）= .topbar + 进度轨道，复用 .progress */
+
+/* --- 顶栏 chip（情境 / 连胜 / 演示） --- */
+.topchip{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 12px; border-radius:var(--r-pill);
+  background:var(--surface); border:2px solid var(--border);
+  box-shadow:var(--ledge-sm);
+  font-family:var(--font-body); font-size:13px; font-weight:700; color:var(--ink);
+}
+.topchip--streak{ border-color:var(--energy); color:var(--energy-text); }
+.topchip--demo{ background:var(--sky-veil); border-color:var(--sky-veil-border); color:var(--sky-text); box-shadow:none; }
+
+/* --- 情境卡（首页 2×2 网格） --- */
+.scene-card{
+  display:flex; align-items:center; gap:14px; padding:16px;
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:var(--r-card); box-shadow:0 3px 0 var(--border);
+  cursor:pointer; text-align:left;
+}
+.scene-card:active{ transform:translateY(3px); box-shadow:0 0 0 var(--border); }
+.scene-card__thumb{
+  width:76px; height:76px; border-radius:var(--r-sm); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.scene-card__thumb svg{ width:40px; height:40px; }
+.scene-card--doctor .scene-card__thumb{ background:var(--sky-veil); }
+.scene-card--restaurant .scene-card__thumb{ background:var(--gold-veil); }
+.scene-card--weekend .scene-card__thumb{ background:var(--brand-veil); }
+.scene-card--way .scene-card__thumb{ background:#FFE8E6; } /* 珊瑚浅底，插花色不占色板 */
+.scene-card__info{ flex:1; display:flex; flex-direction:column; gap:4px; }
+.scene-card__name{ font-size:17px; font-weight:700; color:var(--ink); }
+.scene-card__desc{ font-size:13px; color:var(--ink-2); }
+.scene-card__eng{ font-family:var(--font-display); font-size:12px; font-weight:600; color:var(--ink-4); }
+
+/* --- 录音台（跟读页右栏） --- */
+.recorder{
+  display:flex; flex-direction:column; gap:14px;
+  width:430px; padding:24px;
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:24px;
+}
+.recorder__wave{
+  height:28px; border-radius:8px; background:var(--sunk);
+  display:flex; align-items:center; justify-content:center; gap:5px;
+}
+.recorder__wave i{ width:8px; border-radius:999px; background:var(--border); }
+.recorder__wave.is-live i{ background:var(--sky); }
+.stat-mini{
+  flex:1; display:flex; flex-direction:column; gap:6px; padding:14px;
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--r-ctl);
+}
+.stat-mini__label{ font-size:12px; color:var(--ink-2); }
+.stat-mini__value{ font-family:var(--font-display); font-size:20px; font-weight:800; color:var(--sky-text); font-variant-numeric:tabular-nums; }
+
+/* --- 隐藏句占位（接龙页） --- */
+.hidden-dots{ display:inline-flex; gap:12px; }
+.hidden-dots i{ width:14px; height:14px; border-radius:999px; background:#B7E38C; }
+
+/* --- 候选录音卡（小节回顾） --- */
+.take-card{
+  display:flex; flex-direction:column; gap:10px; padding:16px;
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--r-ctl);
+}
+.take-card.is-recommended{ border-color:var(--brand-veil-border); }
+.take-card__badge{
+  align-self:flex-start; padding:6px 10px; border-radius:var(--r-pill);
+  background:var(--brand-veil); color:var(--brand-text);
+  font-size:11px; font-weight:700;
+}
+
+/* --- 周日历（我的进步） --- */
+.week{ display:flex; justify-content:space-between; gap:10px; }
+.week__day{ display:flex; flex-direction:column; align-items:center; gap:4px; width:44px; }
+.week__dot{
+  width:36px; height:36px; border-radius:999px;
+  background:var(--surface); border:2px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+}
+.week__dot.is-done{ background:var(--brand); border-color:var(--brand); box-shadow:0 3px 0 var(--brand-shadow); color:#fff; }
+.week__dot.is-today{ border-color:var(--gold); }
+.week__label{ font-size:12px; color:var(--ink-4); }
+.week__day.is-done .week__label{ color:var(--brand-text); font-weight:700; }
+
+/* --- 统计卡（进步 / 家长概览） --- */
+.stat-card{
+  display:flex; flex-direction:column; gap:6px; padding:18px;
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--r-ctl);
+}
+.stat-card__label{ font-size:12px; color:var(--ink-2); }
+.stat-card__value{ font-family:var(--font-display); font-size:26px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+.stat-card__value--sky{ color:var(--sky-text); }
+.stat-card__value--energy{ color:var(--energy-text); }
+.stat-card__note{ font-size:11px; color:var(--ink-4); }
+
+/* --- 数字键盘（家长口令） --- */
+.keypad{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+.keypad__key{
+  height:64px; border-radius:var(--r-ctl);
+  background:var(--surface); border:2px solid var(--border);
+  box-shadow:0 3px 0 var(--border);
+  font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.keypad__key:active{ transform:translateY(3px); box-shadow:0 0 0 var(--border); }
+.keypad__key--fn{ font-family:var(--font-body); font-size:16px; font-weight:700; color:var(--ink-2); }
+.pin-dots{ display:inline-flex; gap:12px; }
+.pin-dots i{ width:16px; height:16px; border-radius:999px; background:var(--surface); border:2px solid var(--disabled-bg); }
+.pin-dots i.is-filled{ background:var(--brand-cta); border-color:var(--brand-cta); }
+
+/* --- 句子卡（句子本 / 家长合集 / 候选） --- */
+.sentence-card{
+  display:flex; align-items:center; gap:20px; padding:20px;
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:var(--r-card); box-shadow:0 3px 0 var(--border);
+}
+.sentence-card__meta{ font-size:12px; font-weight:700; color:var(--energy-text); }
+.sentence-card__eng{ font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--ink); }
+.sentence-card__cn{ font-size:13px; color:var(--ink-2); }
+
+/* --- 弹窗（Modal 浮层 = 棱边规则的唯一例外） --- */
+.modal{
+  width:min(560px, 92vw); padding:24px;
+  background:var(--surface); border:2px solid var(--border); border-radius:24px;
+  box-shadow:0 12px 32px rgba(26,26,46,.18); /* 浮层专属，全站唯一允许的大投影 */
+}
+.modal__overlay{ position:fixed; inset:0; background:rgba(26,26,46,.5); }
+.modal--danger{ border-color:#F2B8B3; }
+.btn-danger{
+  background:var(--danger-text); color:#fff; box-shadow:0 4px 0 #A62B2B;
+}
+.btn-danger:active{ transform:translateY(4px); box-shadow:0 0 0 #A62B2B; }
+
+/* --- 状态页（休息 / 空态 / 错误 / 竖屏） --- */
+.state-page{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; padding:24px; text-align:center;
+}
+.state-page__icon{
+  width:96px; height:96px; border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+}
+.state-page__icon--sky{ background:var(--sky-veil); }
+.state-page__icon--gold{ background:var(--gold-veil); }
+.state-page__icon--danger{ background:#FFE8E6; }
+.state-page__title{ font-size:20px; font-weight:700; color:var(--ink); }
+.state-page__note{ font-size:13px; color:var(--ink-2); max-width:40ch; }

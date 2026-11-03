@@ -1,0 +1,29 @@
+/* ============================================================
+   Echo · 本地字体（自托管，断网可用，OFL 许可）
+   来源：Google Fonts 官方 woff2（latin 切片 · 可变字重）
+   许可证：fonts/OFL-Fredoka.txt · fonts/OFL-Nunito.txt
+   ------------------------------------------------------------
+   Fredoka  → 英文标题 / 目标句 / 数值（display 用途，圆润）
+   Nunito   → 英文正文 / 标签（body 用途，易读）
+   中文不命中 unicode-range → 自动落到系统栈
+   （PingFang SC / HarmonyOS Sans SC / Microsoft YaHei）
+   禁止改回任何外链字体（规范 §1.5 红线）
+   ============================================================ */
+
+@font-face{
+  font-family:'Fredoka';
+  font-style:normal;
+  font-weight:400 700;              /* 可变字重范围 */
+  font-display:swap;                /* 未加载完先用 fallback，加载完交换 */
+  src:url('./fredoka-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face{
+  font-family:'Nunito';
+  font-style:normal;
+  font-weight:400 800;              /* 可变字重范围 */
+  font-display:swap;
+  src:url('./nunito-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
